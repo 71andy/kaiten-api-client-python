@@ -574,6 +574,10 @@ class Card (KaitenObject):
         """
         return self.__create_item__('tags', 'Tag', { 'name' : name })
 
+    def get_comments(self):
+        """Returns a list of comments"""
+        return self.__get_items__('comments', 'Comment')
+
     def add_comment(self, text, params={}):
         """Adds new comment to card
         :param text: Comment text
