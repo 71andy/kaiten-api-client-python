@@ -6,7 +6,7 @@ Client functionality for Kaiten API.
 """
 
 import http.client
-import base64
+# import base64
 import json
 import weakref
 import pprint
@@ -80,20 +80,17 @@ class Client (KaitenObject):
     password = None
     debug = False
 
-    def __init__(self, host, username, password, debug=False ):
+    def __init__(self, host, bearer, debug=False ):
         """
         :param host: IP or hostname of Kaiten server
         :type host: string
-        :param username: Login name for connection
-        :type username: string
-        :param password: User's password for connection
-        :type password: string
+        :param bearer: Bearer for connection, must be used instead username and password
+        :type bearer: string
         :param debug: this is a flag, which enables printing debug informationю
         :type channel: bool
         """
         self.host = host
-        self.username = username
-        self.password = password
+        self.bearer = bearer
         self.debug = debug
 
 
@@ -146,9 +143,9 @@ class Client (KaitenObject):
             except json.decoder.JSONDecodeError:
                 raise InvalidResponseFormat( path, method, body )
         elif resp.status == 401:
-            raise UnauthorizedAccess( self.username )
+            raise UnauthorizedAccess( 'bearer' )
         elif resp.status == 403:
-            raise AccessDenied( self.username, path, method )
+            raise AccessDenied( 'bearer', path, method )
         else:
             raise UnexpectedError( resp.status, path, method, body )
 
@@ -169,9 +166,7 @@ class Client (KaitenObject):
 
     def __get_auth_key__(self):
         """Returns auth key for API"""
-        user_pass = ":".join( [ self.username, self.password ] )
-        key = base64.b64encode( user_pass.encode('utf8') )
-        return "Basic " + key.decode('utf8');
+        return "Bearer " + self.bearer
 
     def get_spaces(self):
         """Returns a list of all avalible spaces"""
