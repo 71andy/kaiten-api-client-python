@@ -236,6 +236,10 @@ class Client (KaitenObject):
             { 'letter': letter, 'name': name, 'color': color }
         )
 
+    def get_custom_properties(self):
+        """Returns a list of all avalible spaces"""
+        return self.__get_items__('/company/custom-properties', 'CustomProperty')
+
 class Space (KaitenObject):
     def __init__(self, parent, data={}):
         self.__deserialize_list__('boards', 'Board', data)
@@ -809,3 +813,44 @@ class ChecklistItem (KaitenObject):
     def delete(self):
         """Deletes this check list item"""
         return self.__delete__()
+
+class CustomProperty(KaitenObject):
+    def __get_uri__(self):
+        return 'company/custom-properties/' + str(self.id)
+
+    def get_select_values(self):
+        """Returns a list of all avalible select values for the current custom property"""
+        select_values = self.__get_items__("select-values", "CustomPropertySelectValue")
+        setattr(self, 'select_values', select_values)
+        return select_values
+
+    def create_select_value(self, name, params={}):
+        """Create custom property select value:
+        :param name: name for new select value
+        :type name: string
+        :param params: Dictionary with attributes for request.
+            Supported attributes:
+            value (String, min length 1, max length 128) [required]
+            color (Number from 1 to 16). (color of the chip) [optional]
+        """
+        params = {'value': name}
+        return self.__create_item__(
+            'select-values', 'CustomPropertySelectValue', params
+        )
+
+
+class CustomPropertySelectValue(KaitenObject):
+    def __get_uri__(self):
+        return 'select-values/' + str(self.id)
+
+    def update(self, name, params={}):
+        """Update custom property select value:
+        :param name: new name for select value
+        :type name: string
+        :param params: Dictionary with attributes for request.
+            Supported attributes:
+            value (String, min length 1, max length 128) [optional]
+            color (Number from 1 to 16). (color of the chip) [optional]
+        """
+        params = {'value': name}
+        return self.__update__('CustomPropertySelectValue', params)
