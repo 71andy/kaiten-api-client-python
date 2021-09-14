@@ -531,9 +531,9 @@ class Card (KaitenObject):
         if 'board' in data :
             self.board = Board( self, data.pop('board') )
             if 'column' in data :
-                self.board = Column( self.board, data.pop('column') )
+                self.column = Column( self.board, data.pop('column') )
             if 'lane' in data :
-                self.board = Lane( self.board, data.pop('lane') )
+                self.lane = Lane( self.board, data.pop('lane') )
         else :
             if 'column' in data :
                 del data['column']
