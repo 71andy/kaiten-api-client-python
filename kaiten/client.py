@@ -729,6 +729,8 @@ class CardFile (KaitenObject):
     def __init__(self, parent, data={}):
         self.__deserialize_item__('author', 'User', data)
 
+        KaitenObject.__init__( self, parent, data )
+
 class CardTimeLog (KaitenObject):
     def __get_uri__(self):
         return 'time-logs/' + str(self.id)
