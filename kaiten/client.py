@@ -545,6 +545,15 @@ class Card (KaitenObject):
     def __get_uri__(self):
         return '/cards/' + str(self.id)
 
+    def update(self, params={}):
+        """Updates the card.
+        :param params: Dictionary with parametrs for request.
+            Full list of avalible parameters is avalible on
+            https://developers.kaiten.io/docs/api-v1.html#cards-patch
+        :type params: dict
+        """
+        return self.__update__( 'Card', params )
+
     def arhive(self):
         """Puts the card to arhive"""
         return self.__update__( 'Card', { 'condition' : 2 } )
