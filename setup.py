@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='kaiten',
-      version='0.1',
+      version='0.2',
       description='Kaiten API client library',
       url='https://github.com/pestkam/kaiten-api-client-python',
       author='Kirill Sysoev',

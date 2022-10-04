@@ -11,6 +11,7 @@ import json
 import weakref
 import pprint
 import urllib
+import time
 
 from kaiten.exceptions import *
 
@@ -18,6 +19,8 @@ from kaiten.exceptions import *
 
 API_VERSION = 'v1'
 USER_AGENT  = "KaitenAPIClientPython"
+MAX_429_RESPONSES = 4
+DELAY_AFTER_429_RESPONSE = 3
 
 
 class KaitenObject (object):
@@ -114,40 +117,48 @@ class Client (KaitenObject):
         else :
             request_body = json.dumps(params)
 
-        conn.request(
-            method,
-            self.__get_url_for__(path),
-            request_body,
-            self.__get_headers__(),
-        )
-
-        if self.debug :
-            print(
-                "Sending request to {} with method {}.\nRequest body:\n{}\n".format(
-                    path, method, request_body
-                )
-            )
-        resp = conn.getresponse()
-
-        body = resp.read().decode()
-        if self.debug :
-            print(
-                "Response code: {}\nResponse body:\n{} \n".format(
-                    resp.status, body
-                )
+        try_num = 1
+        while True:
+            conn.request(
+                method,
+                self.__get_url_for__(path),
+                request_body,
+                self.__get_headers__(),
             )
 
-        if resp.status == 200:
-            try:
-                return json.loads(body)
-            except json.decoder.JSONDecodeError:
-                raise InvalidResponseFormat( path, method, body )
-        elif resp.status == 401:
-            raise UnauthorizedAccess( 'bearer' )
-        elif resp.status == 403:
-            raise AccessDenied( 'bearer', path, method )
-        else:
-            raise UnexpectedError( resp.status, path, method, body )
+            if self.debug :
+                print(
+                    "Sending request to {} with method {}.\nRequest body:\n{}\n".format(
+                        path, method, request_body
+                    )
+                )
+            resp = conn.getresponse()
+
+            body = resp.read().decode()
+            if self.debug :
+                print(
+                    "Response code: {}\nResponse body:\n{} \n".format(
+                        resp.status, body
+                    )
+                )
+
+            if resp.status == 200:
+                try:
+                    return json.loads(body)
+                except json.decoder.JSONDecodeError:
+                    raise InvalidResponseFormat( path, method, body )
+            elif resp.status == 401:
+                raise UnauthorizedAccess( 'bearer' )
+            elif resp.status == 403:
+                raise AccessDenied( 'bearer', path, method )
+            elif resp.status == 429:
+                if try_num < MAX_429_RESPONSES:
+                    try_num += 1
+                    time.sleep(DELAY_AFTER_429_RESPONSE)
+                    continue
+                raise UnexpectedError(resp.status, path, method, body)
+            else:
+                raise UnexpectedError( resp.status, path, method, body )
 
     def __get_url_for__(self, path):
         """Returns absolute path for request with entry point of API
